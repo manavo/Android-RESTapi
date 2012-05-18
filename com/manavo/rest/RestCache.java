@@ -74,6 +74,17 @@ public class RestCache {
 		}
 	}
 	
+	public static void clear(Context c) {
+        // clear all the cache files
+        File cacheDir = c.getCacheDir();
+        for (File cacheFile : cacheDir.listFiles()) {
+        	if (".".equals(cacheFile.getName()) || "..".equals(cacheFile.getName())) {
+        		continue;  // Ignore the self and parent aliases.
+    	    }
+        	cacheFile.delete();
+        }
+	}
+	
 	private static File getFile(Context c, String hash) {
 		String filename = RestCache.getFilename(c, hash);
 		if (filename != null) {
