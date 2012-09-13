@@ -177,6 +177,7 @@ Here, we manually handle the case of getting a 403, and show a different message
 I need to write something for this as well, but I've written enough for one night!
 
 # License
+
 The MIT License
 
 Copyright (c) 2012, Philip Manavopoulos <@manavo>
