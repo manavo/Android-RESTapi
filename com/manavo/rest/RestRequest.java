@@ -46,6 +46,7 @@ import org.apache.http.impl.client.DefaultHttpClient;
 import org.apache.http.impl.conn.tsccm.ThreadSafeClientConnManager;
 import org.apache.http.params.BasicHttpParams;
 import org.apache.http.params.CoreProtocolPNames;
+import org.apache.http.params.HttpConnectionParams;
 import org.apache.http.params.HttpParams;
 import org.apache.http.params.HttpProtocolParams;
 import org.apache.http.protocol.BasicHttpContext;
@@ -231,8 +232,18 @@ public class RestRequest {
 		        HttpParams params = new BasicHttpParams();
 		        HttpProtocolParams.setVersion(params, HttpVersion.HTTP_1_1);
 		        HttpProtocolParams.setContentCharset(params, HTTP.UTF_8);
+		        
+		        // Set the timeout in milliseconds until a connection is established.
+			    // The default value is zero, that means the timeout is not used. 
+			    int timeoutConnection = 15000;
+			    HttpConnectionParams.setConnectionTimeout(params, timeoutConnection);
+			    
+			    // Set the default socket timeout (SO_TIMEOUT) 
+			    // in milliseconds which is the timeout for waiting for data.
+			    int timeoutSocket = 45000;
+			    HttpConnectionParams.setSoTimeout(params, timeoutSocket);
 	
-		        SchemeRegistry registry = new SchemeRegistry();
+			    SchemeRegistry registry = new SchemeRegistry();
 		        registry.register(new Scheme("http", PlainSocketFactory.getSocketFactory(), 80));
 		        registry.register(new Scheme("https", sf, 443));
 	
