@@ -1,6 +1,6 @@
 # Android-RESTapi
 
-A simple Android RESTful library for integrating with RESTful JSON APIs
+A simple Android RESTful (REST) library for integrating with RESTful JSON APIs
 
 This library was developed as part of [Sprinter](http://sprinterapp.com). It has been tested and works fully with [Sprint.ly's](https://sprint.ly) [API](http://support.sprint.ly/kb/api).
 
