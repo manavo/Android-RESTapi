@@ -44,6 +44,7 @@ public class RestCache {
 				while ((line = r.readLine()) != null) {
 				    total.append(line);
 				}
+				r.close();
 
 				return total.toString();
 			} catch (FileNotFoundException e) {
