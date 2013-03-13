@@ -167,9 +167,11 @@ public class RestRequest {
 	        	httpClient.getParams().setParameter(CoreProtocolPNames.USER_AGENT, this.userAgent);
 	        }
 	        
-            UsernamePasswordCredentials upc = new UsernamePasswordCredentials(this.username, this.password);
-            BasicScheme basicAuth = new BasicScheme();
-            request.addHeader(basicAuth.authenticate(upc, request));
+	        if (this.username != null && this.password != null) {
+	            UsernamePasswordCredentials upc = new UsernamePasswordCredentials(this.username, this.password);
+	            BasicScheme basicAuth = new BasicScheme();
+	            request.addHeader(basicAuth.authenticate(upc, request));
+	        }
             request.addHeader("Accept-Encoding", "gzip");
             
             HttpHost targetHost;
