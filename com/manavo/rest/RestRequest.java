@@ -105,7 +105,12 @@ public class RestRequest {
 	
 	public void get(String url) {
 		if (this.data.size() > 0) {
-			url += "?";
+			// if we don't already have some query string parameters, add a ?
+			if (url.indexOf("?") == -1) {
+				url += "?";
+			} else { // if query sting parameter already exist, then keep adding to them
+				url += "&";
+			}
 			for (int i=0; i<this.data.size(); i++) {
 				NameValuePair p = this.data.get(i);
 				try {
