@@ -68,6 +68,8 @@ public class RestRequest {
 	
 	private boolean acceptAllSslCertificates = false;
 	
+	private boolean useSsl = true;
+	
 	private List<NameValuePair> data;
 	
 	private String userAgent = null;
@@ -83,6 +85,10 @@ public class RestRequest {
 	
 	public void setHost(String host) {
 		this.host = host;
+	}
+	
+	public void setSsl(boolean ssl) {
+		this.useSsl = ssl;
 	}
 	
 	public void acceptAllSslCertificates() {
@@ -165,8 +171,13 @@ public class RestRequest {
             BasicScheme basicAuth = new BasicScheme();
             request.addHeader(basicAuth.authenticate(upc, request));
             request.addHeader("Accept-Encoding", "gzip");
-
-            HttpHost targetHost = new HttpHost(this.host, 443, "https");
+            
+            HttpHost targetHost;
+            if (this.useSsl == false) {
+            	targetHost = new HttpHost(this.host, 80, "http");
+            } else {
+            	targetHost = new HttpHost(this.host, 443, "https");
+            }
             HttpResponse response = httpClient.execute(targetHost, request, new BasicHttpContext());
  
             String responseData;
