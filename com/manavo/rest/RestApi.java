@@ -125,6 +125,10 @@ public class RestApi {
 		this.loadingMessage = message;
 	}
 	
+	public void setLoadingMessage(int messageId) {
+		this.loadingMessage = this.activity.getResources().getString(messageId);
+	}
+	
 	public List<NameValuePair> getParameters() {
 		return this.parameters;
 	}
