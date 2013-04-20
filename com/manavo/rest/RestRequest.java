@@ -22,6 +22,7 @@ import javax.net.ssl.SSLContext;
 import javax.net.ssl.TrustManager;
 import javax.net.ssl.X509TrustManager;
 
+import android.util.Log;
 import org.apache.http.Header;
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpHost;
@@ -36,14 +37,18 @@ import org.apache.http.client.methods.HttpDelete;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.client.methods.HttpPut;
+import org.apache.http.client.params.ClientPNames;
+import org.apache.http.client.params.CookiePolicy;
 import org.apache.http.conn.ClientConnectionManager;
 import org.apache.http.conn.scheme.PlainSocketFactory;
 import org.apache.http.conn.scheme.Scheme;
 import org.apache.http.conn.scheme.SchemeRegistry;
 import org.apache.http.conn.ssl.SSLSocketFactory;
+import org.apache.http.entity.StringEntity;
 import org.apache.http.impl.auth.BasicScheme;
 import org.apache.http.impl.client.DefaultHttpClient;
 import org.apache.http.impl.conn.tsccm.ThreadSafeClientConnManager;
+import org.apache.http.message.BasicHeader;
 import org.apache.http.params.BasicHttpParams;
 import org.apache.http.params.CoreProtocolPNames;
 import org.apache.http.params.HttpConnectionParams;
@@ -51,12 +56,16 @@ import org.apache.http.params.HttpParams;
 import org.apache.http.params.HttpProtocolParams;
 import org.apache.http.protocol.BasicHttpContext;
 import org.apache.http.protocol.HTTP;
+import org.apache.http.protocol.HttpContext;
+import org.apache.http.protocol.RequestContent;
 import org.apache.http.util.EntityUtils;
 
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
+import org.json.JSONException;
+import org.json.JSONObject;
 
 public class RestRequest {
 	
@@ -67,12 +76,34 @@ public class RestRequest {
 	private ExecuteAsyncRequest asyncTask;
 	
 	private boolean acceptAllSslCertificates = false;
-	
+
+    private DefaultHttpClient httpClient;
+
 	private boolean useSsl = true;
 	
 	private List<NameValuePair> data;
 	
 	private String userAgent = null;
+    private HttpContext requestContext;
+
+    private String contentType = null;
+
+    public RestRequest() {
+        this.requestContext = new BasicHttpContext();
+        this.httpClient = this.getNewHttpClient();
+    }
+
+    public void setContentType(String type) {
+        this.contentType = type;
+    }
+
+    public HttpContext getRequestContext() {
+        return this.requestContext;
+    }
+
+    public DefaultHttpClient getHttpClient() {
+        return this.httpClient;
+    }
 	
 	public void authorize(String username, String password) {
 		this.username = username;
@@ -142,16 +173,44 @@ public class RestRequest {
 		this.prepareRequest(httpDelete);
 	}
 	
-	private UrlEncodedFormEntity prepareData(List<NameValuePair> nameValuePairs) {
-		try {
-			return new UrlEncodedFormEntity(nameValuePairs);
-		} catch (UnsupportedEncodingException e) {
-			e.printStackTrace();
-			return null;
-		}
+	protected HttpEntity prepareData(List<NameValuePair> nameValuePairs) {
+        if (this.contentType.equalsIgnoreCase("application/json")) {
+            JSONObject data = new JSONObject();
+            try {
+                for (int i=0; i<nameValuePairs.size(); i++) {
+                    NameValuePair p = nameValuePairs.get(i);
+                    data.put(p.getName(), p.getValue());
+                }
+
+                Log.e("RestRequestSending", data.toString());
+
+                StringEntity se = new StringEntity(data.toString());
+                se.setContentType(new BasicHeader(HTTP.CONTENT_TYPE, "application/json"));
+                return se;
+            } catch (JSONException e) {
+                e.printStackTrace();
+                return null;
+            } catch (UnsupportedEncodingException e) {
+                e.printStackTrace();
+                return null;
+            }
+        } else {
+            try {
+                return new UrlEncodedFormEntity(nameValuePairs);
+            } catch (UnsupportedEncodingException e) {
+                e.printStackTrace();
+                return null;
+            }
+        }
 	}
 	
 	private void prepareRequest(HttpRequest request) {
+        if (this.contentType != null) {
+            request.setHeader("Content-type", this.contentType);
+        }
+
+        request.setHeader("Accept", "application/json");
+
 		this.asyncTask = new ExecuteAsyncRequest();
 		this.asyncTask.execute(request);
 	}
@@ -164,12 +223,10 @@ public class RestRequest {
 	
 	private Bundle executeRequest(HttpRequest request) {
         Bundle b = new Bundle();
-        
-		try {
-	        HttpClient httpClient = this.getNewHttpClient();
-	        
-	        if (this.userAgent != null) {
-	        	httpClient.getParams().setParameter(CoreProtocolPNames.USER_AGENT, this.userAgent);
+
+        try {
+            if (this.userAgent != null) {
+                this.httpClient.getParams().setParameter(CoreProtocolPNames.USER_AGENT, this.userAgent);
 	        }
 	        
 	        if (this.username != null && this.password != null) {
@@ -185,7 +242,7 @@ public class RestRequest {
             } else {
             	targetHost = new HttpHost(this.host, 443, "https");
             }
-            HttpResponse response = httpClient.execute(targetHost, request, new BasicHttpContext());
+            HttpResponse response = this.httpClient.execute(targetHost, request, this.requestContext);
  
             String responseData;
             HttpEntity entity = response.getEntity();
@@ -210,6 +267,7 @@ public class RestRequest {
             	b.putString("data", responseData);
             } else {
             	b.putString("statusCodeError", responseData);
+                b.putInt("statusCodeErrorNumber", response.getStatusLine().getStatusCode());
             }
 	    } catch (Exception e) {
 	        e.printStackTrace();
@@ -238,7 +296,7 @@ public class RestRequest {
 	}
 	
 	// taken from http://stackoverflow.com/questions/2642777/trusting-all-certificates-using-httpclient-over-https
-	private HttpClient getNewHttpClient() {
+	private DefaultHttpClient getNewHttpClient() {
 		if (this.acceptAllSslCertificates == true) {
 		    try {
 		        KeyStore trustStore = KeyStore.getInstance(KeyStore.getDefaultType());
