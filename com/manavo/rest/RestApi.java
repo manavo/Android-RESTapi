@@ -18,6 +18,7 @@ import android.database.MatrixCursor;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
+import android.util.Log;
 import android.widget.Toast;
 
 
@@ -82,7 +83,16 @@ public class RestApi {
 							}
 						} else {
 							// incorrect format
-							RestApi.this.onError("Unknown format of data");
+							Log.d("RestApi", data.toString());
+							//RestApi.this.onError("Unknown format of data");
+                            // we want to save the cache
+                            if (RestApi.this.requestType.equalsIgnoreCase("get") == true && RestApi.this.cachePolicy != RestCache.CachePolicy.IGNORE_CACHE) {
+                                RestCache.save(RestApi.this, data.trim());
+                            }
+
+                            if (RestApi.this.cachePolicy != RestCache.CachePolicy.UPDATE_CACHE) {
+                                RestApi.this.onSuccess(data);
+                            }
 						}
 					} catch (JSONException e) {
 						e.printStackTrace();
@@ -91,8 +101,8 @@ public class RestApi {
 					}
 				} else if (b.containsKey("error") == true) {
 					RestApi.this.onError(b.getString("error"));
-				} else if (b.containsKey("statusCodeError") == true) {
-					RestApi.this.onStatusCodeError(b.getString("statusCodeError"));
+				} else if (b.containsKey("statusCodeError") == true && b.containsKey("statusCodeErrorNumber") == true) {
+					RestApi.this.onStatusCodeError(b.getInt("statusCodeErrorNumber"), b.getString("statusCodeError"));
 				} else {
 					RestApi.this.onError("Misconfigured code");
 				}
@@ -208,7 +218,7 @@ public class RestApi {
 		}
 	}
 	
-	public void onStatusCodeError(String data) {
+	public void onStatusCodeError(int code, String data) {
 		if (this.errorCallback != null) {
 			this.errorCallback.error(data);
 		} else {
