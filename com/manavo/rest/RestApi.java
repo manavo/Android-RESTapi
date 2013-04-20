@@ -158,7 +158,7 @@ public class RestApi {
 	
 	public void hideLoadingDialog() {
 		// hide the loading progress bar which might be visible in the titlebar
-		this.activity.setProgressBarIndeterminateVisibility(false);
+		this.setProgressBarIndeterminateVisibility(false);
 
 		if (this.loadingMessage != null && this.progressDialog != null && this.progressDialog.isShowing()) {
 			try {
@@ -169,9 +169,13 @@ public class RestApi {
 		}
 	}
 	
+	protected void setProgressBarIndeterminateVisibility(boolean visible) {
+		this.activity.setProgressBarIndeterminateVisibility(false);
+	}
+	
 	public void removeProgressDialog() {
 		// hide the loading progress bar which might be visible in the titlebar
-		this.activity.setProgressBarIndeterminateVisibility(false);
+		this.setProgressBarIndeterminateVisibility(false);
 
 		if (this.loadingMessage != null && this.progressDialog != null && this.progressDialog.isShowing()) {
 			this.progressDialog.dismiss();
@@ -253,7 +257,7 @@ public class RestApi {
 				this.showLoadingDialog();
 			} else {
 				// show loading progress bar in the titlebar
-				this.activity.setProgressBarIndeterminateVisibility(true);
+				this.setProgressBarIndeterminateVisibility(true);
 			}
 			
 			this.rest.setData(this.parameters);
