@@ -68,6 +68,7 @@ public class RestRequest {
 	private String username;
 	private String password;
 	private String host;
+	private int port;
 	private Handler handler;
 	private ExecuteAsyncRequest asyncTask;
 	
@@ -112,6 +113,10 @@ public class RestRequest {
 	
 	public void setHost(String host) {
 		this.host = host;
+	}
+
+	public void setPort(int port) {
+		this.port = port;
 	}
 	
 	public void setSsl(boolean ssl) {
@@ -234,7 +239,7 @@ public class RestRequest {
             
             HttpHost targetHost;
             if (this.useSsl == false) {
-            	targetHost = new HttpHost(this.host, 80, "http");
+            	targetHost = new HttpHost(this.host, this.port, "http");
             } else {
             	targetHost = new HttpHost(this.host, 443, "https");
             }
@@ -316,7 +321,7 @@ public class RestRequest {
 			    HttpConnectionParams.setSoTimeout(params, timeoutSocket);
 	
 			    SchemeRegistry registry = new SchemeRegistry();
-		        registry.register(new Scheme("http", PlainSocketFactory.getSocketFactory(), 80));
+		        registry.register(new Scheme("http", PlainSocketFactory.getSocketFactory(), this.port));
 		        registry.register(new Scheme("https", sf, 443));
 	
 		        ClientConnectionManager ccm = new ThreadSafeClientConnManager(params, registry);
