@@ -88,6 +88,9 @@ public class RestRequest {
     public RestRequest() {
         this.requestContext = new BasicHttpContext();
         this.httpClient = this.getNewHttpClient();
+        
+        // Default port to be 80
+        this.port = 80;
     }
 
     public void setContentType(String type) {
