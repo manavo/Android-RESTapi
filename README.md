@@ -25,6 +25,7 @@ public class SprinterApi extends RestApi {
 		this.BASE_URL = "https://sprint.ly/api/";
 		this.urlSuffix = ".json";
 		this.rest.setHost("sprint.ly");
+		this.rest.setPort(80);
 		this.setUserAgent("sprinter");
 		
 		this.acceptAllSslCertificates();
