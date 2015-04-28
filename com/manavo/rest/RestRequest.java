@@ -207,7 +207,7 @@ public class RestRequest {
             }
         } else {
             try {
-                return new UrlEncodedFormEntity(nameValuePairs);
+                return new UrlEncodedFormEntity(nameValuePairs, "UTF-8");
             } catch (UnsupportedEncodingException e) {
                 e.printStackTrace();
                 return null;
